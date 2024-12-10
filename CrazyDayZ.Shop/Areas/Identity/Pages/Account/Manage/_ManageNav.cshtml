@@ -1,0 +1,21 @@
+﻿@using CrazyDayZ.Shop.Data
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppIdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ProfileNavClass(ViewContext)" id="profile" asp-page="./Index">Профиль</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.PurchaseHistoryNavClass(ViewContext)" id="PurchaseHistory" asp-page="./PurchaseHistory">История покупок</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
+</ul>
+
+
+<form id="logoutForm" class="form-inline" style="margin-top: 20px" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+    <div class="xbox__footer">
+        <a href="#" class="btn btn-danger btn-block" onclick="document.getElementById('logoutForm').submit(); return false;">
+            Выход
+        </a>
+    </div>
+</form>
+

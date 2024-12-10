@@ -1,0 +1,42 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Профиль";
+    ViewData["ActivePage"] = ManageNavPages.Profile;
+}
+
+<div class="animated" >
+    <div class="xbox xbox_profile">
+        <div class="xbox__header">
+            <h4>Профиль</h4>
+        </div>
+        <div class="xbox__body">
+            <table class="table table-striped profile_table">
+                <tbody>
+                    <tr>
+                        <th>SteamId</th>
+                        <td>
+                            <a href="//steamcommunity.com/profiles/@Model.SteamId" target="_blank" rel="noopener noreferrer">@Model.SteamId</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Баланс</th>
+                        <td>@Model.Balance RUB</td>
+                    </tr>
+                    <tr>
+                        <th>Бонусы</th>
+                        <td>0 RUB</td>
+                    </tr>
+                    <tr>
+                        <th>Скидка</th>
+                        <td>0%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

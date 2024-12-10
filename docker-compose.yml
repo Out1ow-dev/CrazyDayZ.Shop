@@ -1,0 +1,6 @@
+services:
+  crazydayz.shop:
+    image: ${DOCKER_REGISTRY-}crazydayzshop
+    build:
+      context: .
+      dockerfile: CrazyDayZ.Shop/Dockerfile

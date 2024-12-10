@@ -1,0 +1,589 @@
+﻿@page
+@using CrazyDayZ.Shop.Models
+@model CrazyDayZ.Shop.Pages.AdminPanel.ProductManageModel
+@{
+    ViewData["Title"] = "Управление продуктами";
+    ViewData["ActivePage"] = AdminManageNavPages.ProductManage;
+}
+<h1>Управление продуктами</h1>
+<button id="addProductButton" class="btn btn-primary">Добавить продукт</button>
+<button id="addLotteryButton" class="btn btn-primary">Добавить рулетку</button>
+
+<!-- Модальное окно для управления продуктами -->
+<div id="productModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить/Редактировать продукт</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm" method="post" asp-page-handler="SaveProduct">
+                    <input type="hidden" asp-for="Product.Id" />
+                    <div class="form-group">
+                        <label asp-for="Product.Name"></label>
+                        <input asp-for="Product.Name" class="form-control" required />
+                        <span asp-validation-for="Product.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Product.OldPrice"></label>
+                        <input asp-for="Product.OldPrice" class="form-control" required />
+                        <span asp-validation-for="Product.OldPrice" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Product.NewPrice"></label>
+                        <input asp-for="Product.NewPrice" class="form-control" required />
+                        <span asp-validation-for="Product.NewPrice" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Скидка</label>
+                        <input asp-for="Product.Discount" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Product.ImageUrl"></label>
+                        <input asp-for="Product.ImageUrl" class="form-control" required />
+                        <span asp-validation-for="Product.ImageUrl" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Product.Description"></label>
+                        <textarea asp-for="Product.Description" class="form-control" required></textarea>
+                        <span asp-validation-for="Product.Description" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Выберите категорию</label>
+                        <select asp-for="Product.Category.Id" class="form-control" required>
+                            <option value="">-- Выберите категорию --</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Product.Category.Id" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Выберите доступные сервера</label>
+                        <div>
+                            @foreach (var server in Model.Servers)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="AvailableServers" value="@server.Name" id="server_@server.Name">
+                                    <label class="form-check-label" for="server_@server.Name">@server.Name</label>
+                                </div>
+                            }
+                        </div>
+                        <span class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="showDiscount" name="Product.ShowDiscount" value="true" /> Отображать скидку
+                        </label>
+                    </div>
+
+                    <h5>Предметы</h5>
+                    <div id="itemsContainer"></div>
+                    <button type="button" class="btn btn-secondary" id="addItemButton">Добавить предмет</button>
+
+                    <h5>Автомобили</h5>
+                    <div id="carContainer"></div>
+                    <button type="button" class="btn btn-secondary" id="addCarButton">Добавить автомобиль</button>
+
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="lotteryModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить/Редактировать рулетку</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="lotteryForm" method="post" asp-page-handler="SaveLottery">
+                    <input type="hidden" asp-for="Lottery.Id" />
+                    <div class="form-group">
+                        <label asp-for="Lottery.Name"></label>
+                        <input asp-for="Lottery.Name" class="form-control" required />
+                        <span asp-validation-for="Lottery.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Lottery.OldPrice"></label>
+                        <input asp-for="Lottery.OldPrice" class="form-control" required />
+                        <span asp-validation-for="Lottery.OldPrice" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Lottery.NewPrice"></label>
+                        <input asp-for="Lottery.NewPrice" class="form-control" required />
+                        <span asp-validation-for="Lottery.NewPrice" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Скидка</label>
+                        <input asp-for="Lottery.Discount" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Lottery.ImageUrl"></label>
+                        <input asp-for="Lottery.ImageUrl" class="form-control" required />
+                        <span asp-validation-for="Lottery.ImageUrl" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Выберите категорию</label>
+                        <select asp-for="Lottery.Category.Id" class="form-control" required>
+                            <option value="">-- Выберите категорию --</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Lottery.Category.Id" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Выберите доступные сервера</label>
+                        <div>
+                            @foreach (var server in Model.Servers)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="AvailableServers" value="@server.Name" id="server_@server.Name">
+                                    <label class="form-check-label" for="server_@server.Name">@server.Name</label>
+                                </div>
+                            }
+                        </div>
+                        <span class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="showLotteryDiscount" name="Lottery.ShowDiscount" value="true" /> Отображать скидку
+                        </label>
+                    </div>
+                    <h5>Продукты в рулетке</h5>
+                    <div id="lotteryProductsContainer"></div>
+                    <button type="button" class="btn btn-secondary" id="addLotteryProductButton">Добавить продукт в рулетку</button>
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Поле для поиска -->
+<div class="mt-3">
+    <input type="text" id="searchInput" placeholder="Поиск по названию" class="form-control" />
+</div>
+
+<!-- Таблица с продуктами и рулетками -->
+<div class="table-container mt-3" style="max-height: 500px; overflow-y: auto;">
+    <table class="table" id="combinedTable">
+        <thead>
+            <tr>
+                <th>Тип</th>
+                <th>Название</th>
+                <th>Старая цена</th>
+                <th>Новая цена</th>
+                <th>Скидка</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="combinedTableBody">
+            @await Html.PartialAsync("_CombinedTable", new CombinedTableViewModel
+       {
+           Products = Model.Products,
+           Lotteries = Model.Lotteries
+       })
+        </tbody>
+    </table>
+</div>
+
+<!-- Модальное окно для выбора продукта и шанса -->
+<div id="selectProductModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Выберите продукт и укажите шанс</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="productSelect">Выберите продукт</label>
+                    <select id="productSelect" class="form-control">
+                        <option value="">-- Выберите продукт --</option>
+                        @foreach (var product in Model.Products)
+                        {
+                            <option value="@product.Id">@product.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productChance">Шанс выпадения (%)</label>
+                    <input type="number" id="productChance" class="form-control" min="1" max="100" required />
+                </div>
+                <button type="button" class="btn btn-primary" id="confirmAddLotteryProduct">Добавить продукт в рулетку</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Добавление функционала поиска
+            $('#searchInput').on('input', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                $('#productsTableBody tr').filter(function () {
+                    const productName = $(this).find('td').eq(1).text().toLowerCase(); // Индекс 1 соответствует названию
+                    $(this).toggle(productName.indexOf(searchTerm) > -1);
+                });
+            });
+
+            // Сортировка по заголовкам
+            $('.sortable').on('click', function () {
+                const sortKey = $(this).data('sort');
+                const rows = $('#productsTableBody tr').get();
+                rows.sort(function (a, b) {
+                    const A = $(a).find('td').eq(sortKey === 'name' ? 1 : sortKey === 'oldPrice' ? 2 : sortKey === 'newPrice' ? 3 : 0).text().toUpperCase();
+                    const B = $(b).find('td').eq(sortKey === 'name' ? 1 : sortKey === 'oldPrice' ? 2 : sortKey === 'newPrice' ? 3 : 0).text().toUpperCase();
+                    return A < B ? -1 : A > B ? 1 : 0;
+                });
+                $.each(rows, function (index, row) {
+                    $('#productsTableBody').append(row);
+                });
+            });
+
+            // Скроллбар
+            const maxRows = 7;
+            const rowCount = $('#combinedTableBody tr').length;
+            if (rowCount > maxRows) {
+                $('.table-container').css({
+                    'max-height': '500px',
+                    'overflow-y': 'auto'
+                });
+            }
+
+            $('#addProductButton').click(function () {
+                $('#productModal').modal('show');
+                $('#productForm')[0].reset(); // Сброс формы
+                $('#productForm input[name="Product.Id"]').val(''); // Сброс ID
+                $('#productForm select[name="Product.Category.Id"]').val(''); // Сброс выбора категории
+                $('#productForm input[name="Product.Discount"]').val(''); // Сброс скидки
+                $('#itemsContainer').empty(); // Очистка предметов
+                $('#carContainer').empty(); // Очистка автомобилей
+            });
+
+            $('#addLotteryButton').click(function () {
+                $('#lotteryModal').modal('show');
+                $('#lotteryForm')[0].reset(); // Сброс формы
+                $('#lotteryForm input[name="Lottery.Id"]').val(''); // Сброс ID
+                $('#lotteryProductsContainer').empty(); // Очистка продуктов в рулетке
+                $('#lotteryForm input[name="Lottery.Discount"]').val(''); // Сброс скидки
+            });
+
+            $('#addLotteryProductButton').click(function () {
+                $('#selectProductModal').modal('show'); // Открываем модальное окно выбора продукта
+            });
+
+            $('#confirmAddLotteryProduct').click(function () {
+                const selectedProductId = $('#productSelect').val();
+                const chance = $('#productChance').val();
+                if (selectedProductId && chance) {
+                    // Проверка, чтобы шанс был положительным
+                    if (parseInt(chance) <= 0) {
+                        alert('Пожалуйста, укажите положительное значение шанса.');
+                        return;
+                    }
+
+                    const productIndex = $('#lotteryProductsContainer .lottery-product').length; // Получаем текущий индекс для LotteryProducts
+                    $('#lotteryProductsContainer').append(`
+                        <div class="lottery-product" data-id="${selectedProductId}">
+                            <input type="hidden" name="LotteryProducts[${productIndex}].ProductId" value="${selectedProductId}" />
+                            <input type="hidden" name="LotteryProducts[${productIndex}].Chance" value="${chance}" />
+                            <span>Продукт ID: ${selectedProductId} | Шанс: ${chance}%</span>
+                            <button type="button" class="btn btn-danger" onclick="removeLotteryProduct(this)">Удалить</button>
+                        </div>
+                    `);
+                    $('#selectProductModal').modal('hide'); // Закрываем модальное окно
+                } else {
+                    alert('Пожалуйста, выберите продукт и укажите шанс.');
+                }
+            });
+
+                    $(document).on('click', '.edit-product', function () {
+            var productId = $(this).data('id');
+            $.get('@Url.Page("ProductManage", "GetProduct")', { id: productId }, function (data) {
+                // Заполнение формы редактирования
+                $('#productForm input[name="Product.Id"]').val(data.id);
+                $('#productForm input[name="Product.Name"]').val(data.name);
+                $('#productForm input[name="Product.OldPrice"]').val(data.oldPrice);
+                $('#productForm input[name="Product.NewPrice"]').val(data.newPrice);
+                $('#productForm.input[name="Product.Discount"]').val(data.discount);
+                $('#productForm input[name="Product.ImageUrl"]').val(data.imageUrl);
+                $('#productForm textarea[name="Product.Description"]').val(data.description);
+                $('#productForm select[name="Product.Category.Id"]').val(data.category.Id);
+                $('#showDiscount').prop('checked', data.showDiscount);
+
+                // Заполнение доступных серверов
+                var availableServers = data.availableServers;
+                $('input[name="AvailableServers"]').each(function() {
+                    $(this).prop('checked', availableServers.includes($(this).val()));
+                });
+
+                $('#itemsContainer').empty();
+                data.items.forEach(function(item, index) {
+                    addItemCard(item.className, item.amount, index, item.attachments);
+                });
+
+                $('#carContainer').empty();
+                data.cars.forEach(function(car, index) {
+                    addCarCard(car.className, index, car.attachments);
+                });
+
+                $('#productModal').modal('show'); // Открытие модального окна
+            });
+        });
+
+
+                    $(document).on('click', '.delete-product', function () {
+            var productId = $(this).data('id');
+            if (confirm('Вы уверены, что хотите удалить этот продукт?')) {
+                $.ajax({
+                    url: '@Url.Page("ProductManage", "DeleteProduct")',
+                    type: 'POST',
+                    data: { id: productId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                    success: function (result) {
+                        $('#combinedTableBody').html(result); // Обновляем только тело таблицы
+                    },
+                    error: function (xhr) {
+                        alert('Не удалось удалить продукт: ' + xhr.responseText);
+                    }
+                });
+            }
+        });
+
+
+
+                         // Редактирование рулетки
+        $(document).on('click', '.edit-lottery', function () {
+            var lotteryId = $(this).data('id');
+            $.get('@Url.Page("ProductManage", "GetLottery")', { id: lotteryId }, function (data) {
+                $('#lotteryForm input[name="Lottery.Id"]').val(data.id);
+                $('#lotteryForm input[name="Lottery.Name"]').val(data.name);
+                $('#lotteryForm input[name="Lottery.OldPrice"]').val(data.oldPrice);
+                $('#lotteryForm input[name="Lottery.NewPrice"]').val(data.newPrice);
+                $('#lotteryForm input[name="Lottery.Discount"]').val(data.discount);
+                $('#lotteryForm input[name="Lottery.ImageUrl"]').val(data.imageUrl);
+                $('#lotteryForm select[name="Lottery.Category.Id"]').val(data.category.Id);
+                $('#showLotteryDiscount').prop('checked', data.showDiscount);
+
+                // Очистка предыдущих продуктов
+                $('#lotteryProductsContainer').empty();
+
+                // Добавление продуктов и шансов
+                $.each(data.lotteryProducts, function (index, product) {
+                    $('#lotteryProductsContainer').append(`
+                        <div class="lottery-product" data-id="${product.productId}">
+                            <input type="hidden" name="LotteryProducts[${index}].ProductId" value="${product.productId}" />
+                            <input type="hidden" name="LotteryProducts[${index}].Chance" value="${product.chance}" />
+                            <span>Продукт: ${product.productName} | Шанс: ${product.chance}%</span>
+                            <button type="button" class="btn btn-danger" onclick="removeLotteryProduct(this)">Удалить</button>
+                        </div>
+                    `);
+                });
+
+                $('#lotteryModal').modal('show');
+            });
+        });
+
+
+        // Удаление рулетки
+        $(document).on('click', '.delete-lottery', function () {
+            var lotteryId = $(this).data('id');
+            if (confirm('Вы уверены, что хотите удалить эту рулетку?')) {
+                $.ajax({
+                    url: '@Url.Page("ProductManage", "DeleteLottery")',
+                    type: 'POST',
+                    data: { id: lotteryId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                    success: function (result) {
+                        $('#combinedTableBody').html(result);
+                    },
+                    error: function (xhr) {
+                        alert('Не удалось удалить рулетку: ' + xhr.responseText);
+                    }
+                });
+            }
+        });
+            function calculateProductDiscount() {
+                var oldPrice = parseFloat($('#productForm input[name="Product.OldPrice"]').val());
+                var newPrice = parseFloat($('#productForm input[name="Product.NewPrice"]').val());
+
+                if ($('#showDiscount').is(':checked')) {
+                    if (!isNaN(oldPrice) && !isNaN(newPrice) && oldPrice > 0) {
+                        var discount = ((oldPrice - newPrice) / oldPrice) * 100;
+                        var roundedDiscount = Math.round(discount);
+                        $('#productForm input[name="Product.Discount"]').val('-' + roundedDiscount + '%');
+                    } else {
+                        $('#productForm input[name="Product.Discount"]').val('0%');
+                    }
+                } else {
+                    $('#productForm input[name="Product.Discount"]').val('0%'); // Устанавливаем скидку в 0%
+                }
+            }
+
+            function calculateLotteryDiscount() {
+                var oldPrice = parseFloat($('#lotteryForm input[name="Lottery.OldPrice"]').val());
+                var newPrice = parseFloat($('#lotteryForm input[name="Lottery.NewPrice"]').val());
+
+                if ($('#showLotteryDiscount').is(':checked')) {
+                    if (!isNaN(oldPrice) && !isNaN(newPrice) && oldPrice > 0) {
+                        var discount = ((oldPrice - newPrice) / oldPrice) * 100;
+                        var roundedDiscount = Math.round(discount);
+                        $('#lotteryForm input[name="Lottery.Discount"]').val('-' + roundedDiscount + '%');
+                    } else {
+                        $('#lotteryForm input[name="Lottery.Discount"]').val('0%');
+                    }
+                } else {
+                    $('#lotteryForm input[name="Lottery.Discount"]').val('0%'); // Устанавливаем скидку в 0%
+                }
+            }
+
+            $('#productForm input[name="Product.OldPrice"], #productForm input[name="Product.NewPrice"]').on('input', function () {
+                calculateProductDiscount();
+            });
+
+            $('#lotteryForm input[name="Lottery.OldPrice"], #lotteryForm input[name="Lottery.NewPrice"]').on('input', function () {
+                calculateLotteryDiscount();
+            });
+
+            let itemCount = 0;
+
+            $('#addItemButton').click(function () {
+                itemCount++;
+                addItemCard("", 1, itemCount); // По умолчанию количество 1
+            });
+
+            function addItemCard(className, amount, index, attachments = []) {
+                const itemCard = `
+                    <div class="item-card" id="item_${index}" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+                        <div>
+                            <button type="button" class="btn btn-link" onclick="toggleItemCard(${index})">Предмет ${index} (${className}) <span class="caret"></span></button>
+                            <button type="button" class="btn btn-danger" onclick="removeItem(${index})">Удалить</button>
+                        </div>
+                        <div class="item-content" style="display: none;">
+                            <input type="text" name="Items[${index}].ClassName" placeholder="Класснейм предмета" value="${className}" required />
+                            <input type="number" name="Items[${index}].Amount" placeholder="Количество" value="${amount}" min="1" required />
+
+                            <h6>Аттачменты</h6>
+                            <div class="attachmentsContainer" id="attachmentsContainer_${index}"></div>
+                            <button type="button" class="btn btn-secondary" onclick="addAttachment(${index})">Добавить аттачмент</button>
+                        </div>
+                    </div>
+                `;
+                $('#itemsContainer').append(itemCard);
+                attachments.forEach(att => {
+                    addAttachmentCard(index, att.className, att.amount, $(`#attachmentsContainer_${index} .attachment-card`).length);
+                });
+            }
+
+            window.addAttachment = function(index) {
+                const attIndex = $(`#attachmentsContainer_${index} .attachment-card`).length; // Получаем текущий индекс аттачмента
+                addAttachmentCard(index, "", 1, attIndex); // Добавляем новый аттачмент с пустыми значениями
+            }
+
+            function addAttachmentCard(itemIndex, className, amount, attIndex) {
+                const attachmentCard = `
+                    <div class="attachment-card" style="margin-top: 5px;">
+                        <input type="text" name="Items[${itemIndex}].Attachments[${attIndex}].ClassName" placeholder="Класснейм аттачмента" value="${className}" required />
+                        <input type="number" name="Items[${itemIndex}].Attachments[${attIndex}].Amount" placeholder="Количество" value="${amount}" min="1" required />
+                        <button type="button" class="btn btn-danger" onclick="removeAttachment(this)">Удалить</button>
+                    </div>
+                `;
+                $(`#attachmentsContainer_${itemIndex}`).append(attachmentCard);
+            }
+
+            window.toggleItemCard = function(index) {
+                $(`#item_${index} .item-content`).toggle();
+            }
+
+            window.removeItem = function(id) {
+                $(`#item_${id}`).remove();
+            }
+
+            window.removeAttachment = function(button) {
+                $(button).closest('.attachment-card').remove();
+            }
+
+            let carCount = 0;
+            $('#addCarButton').click(function () {
+                carCount++;
+                addCarCard("", carCount); // По умолчанию
+            });
+
+            function addCarCard(className, index, attachments = []) {
+                const carCard = `
+                    <div class="car-card" id="car_${index}" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+                        <div>
+                            <button type="button" class="btn btn-link" onclick="toggleCarCard(${index})">Автомобиль ${index} (${className}) <span class="caret"></span></button>
+                            <button type="button" class="btn btn-danger" onclick="removeCar(${index})">Удалить</button>
+                        </div>
+                        <div class="car-content" style="display: none;">
+                            <input type="text" name="Cars[${index}].ClassName" placeholder="Класснейм автомобиля" value="${className}" required />
+
+                            <h6>Аттачменты</h6>
+                            <div class="carAttachmentsContainer" id="carAttachmentsContainer_${index}"></div>
+                            <button type="button" class="btn btn-secondary" onclick="addCarAttachment(${index})">Добавить аттачмент</button>
+                        </div>
+                    </div>
+                `;
+                $('#carContainer').append(carCard);
+                attachments.forEach(att => {
+                    addCarAttachmentCard(index, att.className, att.amount, $(`#carAttachmentsContainer_${index} .car-attachment-card`).length);
+                });
+            }
+
+            window.addCarAttachment = function(index) {
+                const attIndex = $(`#carAttachmentsContainer_${index} .car-attachment-card`).length; // Получаем текущий индекс аттачмента
+                addCarAttachmentCard(index, "", 1, attIndex); // Добавляем новый аттачмент с пустыми значениями
+            }
+
+            function addCarAttachmentCard(carIndex, className, amount, attIndex) {
+                const attachmentCard = `
+                    <div class="car-attachment-card" style="margin-top: 5px;">
+                        <input type="text" name="Cars[${carIndex}].Attachments[${attIndex}].ClassName" placeholder="Класснейм аттачмента" value="${className}" required />
+                        <input type="number" name="Cars[${carIndex}].Attachments[${attIndex}].Amount" placeholder="Количество" value="${amount}" min="1" required />
+                        <button type="button" class="btn btn-danger" onclick="removeCarAttachment(this)">Удалить</button>
+                    </div>
+                `;
+                $(`#carAttachmentsContainer_${carIndex}`).append(attachmentCard);
+            }
+
+            window.toggleCarCard = function(index) {
+                $(`#car_${index} .car-content`).toggle();
+            }
+
+
+            window.removeCar = function(index) {
+                $(`#car_${index}`).remove();
+            }
+
+            window.removeCarAttachment = function(button) {
+                $(button).closest('.car-attachment-card').remove();
+            }
+
+            window.removeLotteryProduct = function(button) {
+                    $(button).closest('.lottery-product').remove();
+            }
+
+        });
+    </script>
+}

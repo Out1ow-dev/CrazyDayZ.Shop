@@ -1,0 +1,88 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@model CrazyDayZ.Shop.Pages.AdminPanel.UserManageModel
+@inject UserManager<AppIdentityUser > UserManager
+@inject ApplicationDbContext _context
+
+<h2>Управление пользователями</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Steam ID</th>
+            <th>Баланс</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.SteamId</td>
+                <td>@user.Balance</td>
+                <td>
+                    <button class="btn btn-secondary edit-button" data-toggle="modal" data-target="#editUser Modal" data-id="@user.Id" data-email="@user.Email" data-SteamId="@user.SteamId" data-balance="@user.Balance">Редактировать</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Модальное окно для редактирования пользователя -->
+<div class="modal fade" id="editUser Modal" tabindex="-1" role="dialog" aria-labelledby="editUser ModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUser ModalLabel">Редактировать пользователя</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="UpdateUser ">
+                    <input type="hidden" name="userId" id="userId" />
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" name="email" id="email" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="SteamId">Steam ID</label>
+                        <input type="text" class="form-control" name="SteamId" id="SteamId" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="Balance">Баланс</label>
+                        <input type="number" class="form-control" name="Balance" id="Balance" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            $('#editUser Modal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); // Кнопка, которая открыла модальное окно
+                var userId = button.data('id');
+                var email = button.data('email');
+                var SteamId = button.data('SteamId');
+                var balance = button.data('balance');
+
+                // Заполняем поля модального окна данными пользователя
+                var modal = $(this);
+                modal.find('#userId').val(userId);
+                modal.find('#email').val(email);
+                modal.find('#SteamId').val(SteamId);
+                modal.find('#Balance').val(balance);
+            });
+        });
+    </script>
+}

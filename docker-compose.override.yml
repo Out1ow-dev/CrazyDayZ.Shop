@@ -1,0 +1,24 @@
+services:
+  crazydayz.shop:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  db:
+    image: postgres:latest
+    ports:
+    - "5432:5432"
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: 1234
+    volumes:
+    - db_data:/var/lib/postgresql/data
+    container_name: db_postgresql_container
+volumes:
+  db_data:

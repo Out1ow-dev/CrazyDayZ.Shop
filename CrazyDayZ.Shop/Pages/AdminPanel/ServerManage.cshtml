@@ -1,0 +1,119 @@
+@page
+@model CrazyDayZ.Shop.Pages.AdminPanel.ServerManageModel
+@{
+    ViewData["Title"] = "Управление серверами";
+    ViewData["ActivePage"] = AdminManageNavPages.ServerManage;
+
+}
+
+<h1>Управление серверами</h1>
+
+<button id="addServerButton" class="btn btn-primary">Добавить сервер</button>
+
+<div id="serverModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить/Редактировать сервер</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="serverForm" method="post" asp-page-handler="SaveServer">
+                    <input type="hidden" asp-for="ServerData.Id" />
+                    <div class="form-group">
+                        <label asp-for="ServerData.Name"></label>
+                        <input asp-for="ServerData.Name" class="form-control" required />
+                        <span asp-validation-for="ServerData.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ServerData.IP"></label>
+                        <input asp-for="ServerData.IP" class="form-control" required />
+                        <span asp-validation-for="ServerData.IP" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ServerData.Port"></label>
+                        <input asp-for="ServerData.Port" class="form-control" required />
+                        <span asp-validation-for="ServerData.Port" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ServerData.Password"></label>
+                        <input asp-for="ServerData.Password" class="form-control" />
+                        <span asp-validation-for="ServerData.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ServerData.MaxSlots"></label>
+                        <input asp-for="ServerData.MaxSlots" class="form-control" required />
+                        <span asp-validation-for="ServerData.MaxSlots" class="text-danger"></span>
+                    </div>
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table mt-3" id="serversTable">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>IP</th>
+            <th>Порт</th>
+            <th>Макс. слотов</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody id="serversTableBody">
+        @await Html.PartialAsync("_ServersTable", Model.Servers)
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+                $(document).ready(function () {
+            $('#addServerButton').click(function () {
+                $('#serverModal').modal('show');
+                $('#serverForm')[0].reset(); // Сброс формы
+                $('#serverForm input[name="ServerData.Id"]').val(''); // Сброс ID
+                $('.modal-title').text('Добавить сервер'); // Установить заголовок
+            });
+
+            // Обработка редактирования сервера
+            $(document).on('click', '.edit-server', function () {
+                var serverId = $(this).data('id');
+                $.get('@Url.Page("ServerManage", "GetServer")', { id: serverId }, function (data) {
+                    $('#serverForm input[name="ServerData.Id"]').val(data.id);
+                    $('#serverForm input[name="ServerData.Name"]').val(data.name);
+                    $('#serverForm input[name="ServerData.IP"]').val(data.ip);
+                    $('#serverForm input[name="ServerData.Port"]').val(data.port);
+                    $('#serverForm input[name="ServerData.Password"]').val(data.password);
+                    $('#serverForm input[name="ServerData.MaxSlots"]').val(data.maxSlots);
+                    $('#serverModal').modal('show');
+                    $('.modal-title').text('Редактировать сервер'); // Установить заголовок
+                }).fail(function () {
+                    alert('Не удалось получить данные сервера.');
+                });
+            });
+
+            $(document).on('click', '.delete-server', function () {
+                var serverId = $(this).data('id');
+                if (confirm('Вы уверены, что хотите удалить этот сервер?')) {
+                    $.ajax({
+                        url: '@Url.Page("ServerManage", "DeleteServer")',
+                        type: 'POST',
+                        data: { id: serverId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        success: function (result) {
+                            $('#serversTableBody').html(result);
+                        },
+                        error: function (xhr) {
+                            alert('Не удалось удалить сервер: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+        });
+
+    </script>
+}

@@ -1,0 +1,26 @@
+﻿@using CrazyDayZ.Shop.Data
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppIdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link @AdminManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Статистика</a></li>
+    <li class="nav-item"><a class="nav-link @AdminManageNavPages.UsersNavClass(ViewContext)" id="usermanage" asp-page="./UserManage">БД Пользователей</a></li>
+    <li class="nav-item"><a class="nav-link @AdminManageNavPages.CategoriesManageNavClass(ViewContext)" id="categoriesmanage" asp-page="./CategoriesManage">Категории</a></li>
+    <li class="nav-item"><a class="nav-link @AdminManageNavPages.ProductsManageNavClass(ViewContext)" id="productsmanage" asp-page="./ProductManage">Товары</a></li>
+    <li class="nav-item"><a class="nav-link @AdminManageNavPages.ServerManageNavClass(ViewContext)" id="servermanage" asp-page="./ServerManage">Сервера</a></li>
+
+</ul>
+
+
+<li class="nav-item">
+    <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+        <div class="xbox__footer">
+            <a href="#" class="btn btn-danger btn-block" onclick="document.getElementById('logoutForm').submit(); return false;">
+                Выход
+            </a>
+        </div>
+    </form>
+</li>
+

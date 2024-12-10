@@ -1,0 +1,483 @@
+@page
+@using System.Text.Json
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<style>
+    #rouletteCanvas {
+        display: block;
+        margin: 0 auto;
+        background-color: #f3f3f3;
+        border: 1px solid #ddd;
+    }
+
+    .roulette-items-container {
+        margin-top: 20px;
+    }
+
+    .roulette_item {
+        display: inline-block;
+        text-align: center;
+        margin: 0 10px;
+    }
+
+        .roulette_item img {
+            width: 120px; 
+            height: 70px; 
+        }
+
+    .product__image {
+        width: 100%;
+        height: 175px;
+        object-fit: contain; /* или "contain", в зависимости от желаемого эффекта */
+    }
+
+</style>
+
+<body>
+    <div id="store" class="wrapper">
+        <div data-reactroot="" class="animated">
+            <div class="header">
+                <div class="container newsContainer">
+                    <div class="News-module__container news__promo">
+                        <p class="title"><span>ПРОМОКОД КАЖДЫЙ ВАЙП</span></p>
+                        <p class="description">Вайпы происходят раз в месяц</p>
+                        <a target="_blank" href="https://discord.gg/vEHQzaru" class="custom__btn">Узнать промокод</a>
+                    </div>
+                    <div class="News-module__container news__24h">
+                        <p class="title"><span>АКТУАЛЬНЫЕ НОВОСТИ ПРОЕКТА</span></p>
+                        <p class="description">На нашем оффициальном Discord канале</p>
+                        <a target="_blank" href="https://discord.gg/vEHQzaru" class="custom__btn">Узнать новости</a>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 col-xl-9 push-lg-4 push-xl-3">
+                            <div class="animated">
+                                <div class="xbox xbox_store">
+                                    <div class="xbox__header">
+                                        <h4>Магазин</h4>
+                                    </div>
+                                    <div class="xbox__body">
+                                        <div class="store-categories">
+                                            <button class="btn btn-secondary active" onclick="filterProducts('Все')">Все</button>
+                                            @foreach (var category in Model.Categories)
+                                            {
+                                                <button class="btn btn-secondary" role="button" onclick="filterProducts('@category.Name')">@category.Name</button>
+                                            }
+                                        </div>
+                                        <div class="store-servers">
+                                            <nav class="nav nav-pills flex-column flex-md-row">
+                                                <a href="#" class="nav-link text-md-center server-filter" data-server-name="Все сервера" onclick="filterProductsByServer('Все сервера')">Все сервера</a>
+                                                @foreach (var server in Model.Servers)
+                                                {
+                                                    <a href="#" class="nav-link text-md-center server-filter" data-server-name="@server.Name" onclick="filterProductsByServer('@server.Name')">@server.Name</a>
+                                                }
+                                            </nav>
+                                        </div>
+                                        <div class="store-products" id="productContainer">
+                                            @foreach (var product in Model.Products)
+                                            {
+                                                <div class="store-products__item" data-category="@product.Category.Name" data-servers="@string.Join(",", product.AvailableServers)">
+                                                    <a href="#" class="product"
+                                                       data-id="@product.Id"
+                                                       data-type="product"
+                                                       data-name="@product.Name"
+                                                       data-oldprice="@product.OldPrice RUB"
+                                                       data-newprice="@product.NewPrice RUB"
+                                                       data-image="@product.ImageUrl"
+                                                       data-description="@product.Description"
+                                                       data-servers="@string.Join(",", product.AvailableServers)"
+                                                       data-toggle="modal"
+                                                       data-target="#productModal">
+                                                        <div class="product__price discount">
+                                                            @if (product.ShowDiscount && product.Discount != "0%")
+                                                            {
+                                                                <div class="product__price-old">@product.OldPrice RUB</div>
+                                                            }
+                                                            <div class="product__price-new">@product.NewPrice RUB</div>
+                                                        </div>
+                                                        @if (product.ShowDiscount && product.Discount != "0%")
+                                                        {
+                                                            <div class="product__discount">@product.Discount</div>
+                                                        }
+                                                        <img class="product__image" src="@product.ImageUrl" />
+                                                        <div class="product__name">@product.Name</div>
+                                                    </a>
+                                                </div>
+                                            }
+
+                                            @foreach (var lottery in Model.Lotteries)
+                                            {
+                                                var lotteryProductsJson = JsonSerializer.Serialize(
+                                                lottery.LotteryProducts.Select(lp => new
+                                                {
+                                                    name = lp.Product.Name,
+                                                    description = lp.Product.Description,
+                                                    chance = lp.Chance,
+                                                    imageUrl = lp.Product.ImageUrl
+                                                })
+                                                );
+
+                                                <div class="store-products__item" data-category="@lottery.Category.Name" data-servers="@string.Join(",", lottery.AvailableServers)">
+                                                    <a href="#" class="product"
+                                                       data-id="@lottery.Id"
+                                                       data-type="roulette"
+                                                       data-name="@lottery.Name"
+                                                       data-oldprice="@lottery.OldPrice RUB"
+                                                       data-newprice="@lottery.NewPrice RUB"
+                                                       data-image="@lottery.ImageUrl"
+                                                       data-servers="@string.Join(",", lottery.AvailableServers)"
+                                                       data-lottery-products='@lotteryProductsJson'
+                                                       data-toggle="modal"
+                                                       data-target="#rouletteModal">
+                                                        <div class="product__price discount">
+                                                            @if (lottery.ShowDiscount && lottery.Discount != "0%")
+                                                            {
+                                                                <div class="product__price-old">@lottery.OldPrice RUB</div>
+                                                            }
+                                                            <div class="product__price-new">@lottery.NewPrice RUB</div>
+                                                        </div>
+                                                        @if (lottery.ShowDiscount && lottery.Discount != "0%")
+                                                        {
+                                                            <div class="product__discount">@lottery.Discount</div>
+                                                        }
+                                                        <img class="product__image" src="@lottery.ImageUrl" />
+                                                        <div class="product__name">@lottery.Name</div>
+                                                    </a>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 pull-lg-8 col-xl-3 pull-xl-9">
+                            <div class="xbox xbox_custommonitoring">
+                                <custom-monitoring>
+                                    <div class="mon-title modded vanillax2"><span>PVE Сервера</span></div>
+                                    @foreach (var server in Model.Servers.Where(s => s.Name.Contains("PVE")))
+                                    {
+                                        <div class="mon-server modded">
+                                            <div class="mon-server-title">
+                                                <span class="server-name">@server.Name</span>
+                                                <span class="server-connect">@server.Connect</span>
+                                            </div>
+                                            <div class="mon-server-status">
+                                                <div class="progressbar" style="--online-players: @server.OnlinePlayersPercentage%; --joining-players: 0%; --queued-players: 100%; background-size: 100% 100%;">
+                                                    <span class="online-text" joining="0" queued="0">@server.CurrentPlayers/@server.MaxPlayers</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </custom-monitoring>
+
+                                <custom-monitoring>
+                                    <div class="mon-title modded vanillax2"><span>PVP Сервера</span></div>
+                                    @foreach (var server in Model.Servers.Where(s => s.Name.Contains("PVP")))
+                                    {
+                                        <div class="mon-server modded">
+                                            <div class="mon-server-title">
+                                                <span class="server-name">@server.Name</span>
+                                                <span class="server-connect">@server.Connect</span>
+                                            </div>
+                                            <div class="mon-server-status">
+                                                <div class="progressbar" style="--online-players: @server.OnlinePlayersPercentage%; --joining-players: 0%; --queued-players: 100%; background-size: 100% 100%;">
+                                                    <span class="online-text" joining="0" queued="0">@server.CurrentPlayers/@server.MaxPlayers</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </custom-monitoring>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <span>Сайт создан в системе </span>
+                        <a href="//alpha.moscow.ovh" target="_blank" rel="noopener noreferrer">Moscow.OVH</a>
+                        <span> © 2014-2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="productModalLabel"></h4>
+                </div>
+                <div class="modal-body">
+                    <img class="service__image" src="" id="modalImage" style="width: 100%;" />
+                    <div class="service__description" id="modalDescription"></div>
+                </div>
+                <div class="modal-footer">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">Активировать на</span>
+                            <select class="form-control" id="activationSelect">
+                                <option value="">Выберите сервер</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <div class="ml-auto">
+                        <button type="button" class="ladda-button btn btn-success" id="buyButton">
+                            <span class="ladda-label" id="buyButtonLabel">Купить</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rouletteModal" tabindex="-1" role="dialog" aria-labelledby="rouletteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="rouletteModalLabel">Доступные награды</h4>
+                </div>
+                <div class="modal-body">
+                    <canvas id="rouletteCanvas" width="600" height="100"></canvas>
+                    <p class="text-center" id="rouletteResult"></p>
+                    <div class="roulette-items-container d-flex flex-wrap justify-content-start"></div>
+                </div>
+                <div class="modal-footer">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">Активировать на</span>
+                            <select class="form-control" id="activationSelectRoulette">
+                                <option value="">Выберите сервер</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                        <button type="button" class="ladda-button btn btn-success" id="rouletteBuyButton">
+                            <span class="ladda-label" id="rouletteBuyButtonLabel">Купить рулетку</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            let currentProductId;
+            let selectedRouletteProduct = [];
+            let currentLotteryId;
+            let rouletteImages = [];
+            let rouletteCanvas = document.getElementById('rouletteCanvas');
+            let rouletteContext = rouletteCanvas.getContext('2d');
+            let spinInterval;
+            let startIndex = 0;
+            let spinning = false; // Флаг для проверки, идет ли вращение
+
+            $(document).ready(function() {
+                $('.product').on('click', function(event) {
+                    event.preventDefault();
+                    var isRoulette = $(this).data('type') === 'roulette';
+
+                    if (isRoulette) {
+                        var rouletteName = $(this).data('name');
+                        var availableServers = $(this).data('servers').split(",");
+                        var lotteryProducts = $(this).data('lottery-products');
+
+                        loadRouletteImages(lotteryProducts);
+                        currentLotteryId = $(this).data('id'); // Сохраняем ID лотереи
+                        $('#rouletteModalLabel').text(rouletteName);
+
+                        $('#activationSelectRoulette').empty().append('<option value="">Выберите сервер</option>');
+                        availableServers.forEach(function(server) {
+                            $('#activationSelectRoulette').append('<option value="' + server + '">' + server + '</option>');
+                        });
+
+                        // Заполняем доступные награды
+                        var $rouletteItemsContainer = $('.roulette-items-container');
+                        $rouletteItemsContainer.empty();
+
+                        lotteryProducts.forEach(function(product) {
+                            var itemHtml = `
+                               <div class="roulette_item" data-name="${product.name}" data-description="${product.description}">
+                                   <div class="subdesc">${product.chance}% — ${product.description}</div>
+                                   <img src="${product.imageUrl}">
+                                   <div class="roulette-item__description flash2 delay3">${product.name}</div>
+                               </div>
+                            `;
+                            $rouletteItemsContainer.append(itemHtml);
+                        });
+
+                        $('#rouletteModal').modal('show'); // Открываем модальное окно
+                    } else {
+                        currentProductId = $(this).data('id');
+                        var productName = $(this).data('name');
+                        var productImage = $(this).data('image');
+                        var productOldPrice = $(this).data('oldprice');
+                        var productNewPrice = $(this).data('newprice');
+                        var productDescription = $(this).data('description');
+                        var availableServers = $(this).data('servers').split(",");
+
+                        $('#productModalLabel').text(productName);
+                        $('#modalImage').attr('src', productImage);
+                        $('#modalDescription').html(productDescription);
+                        $('#buyButtonLabel').text('Купить за ' + productNewPrice);
+
+                        $('#activationSelect').empty();
+                        $('#activationSelect').append('<option value="">Выберите сервер</option>');
+                        availableServers.forEach(function(server) {
+                            $('#activationSelect').append('<option value="' + server + '">' + server + '</option>');
+                        });
+
+                        $('#productModal').modal('show'); // Открываем модальное окно товара
+                    }
+                });
+
+                $('#buyButton').on('click', function() {
+                    var selectedValue = $('#activationSelect').val();
+
+                    if (!selectedValue) {
+                        alert('Пожалуйста, выберите сервер для активации.');
+                        return;
+                    }
+
+                    $.post('/Index?handler=Purchase', { productId: currentProductId, activation: selectedValue, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#productModal').modal('hide');
+                        } else {
+                            alert(response.message);
+                        }
+                    }).fail(function() {
+                        alert('Ошибка при покупке товара. Попробуйте снова.');
+                    });
+                });
+
+                $('#rouletteBuyButton').on('click', function() {
+                    var selectedValue = $('#activationSelectRoulette').val();
+
+                    if (!selectedValue) {
+                        alert('Пожалуйста, выберите сервер для активации.');
+                        return;
+                    }
+                    startRoulette(selectedValue);
+                });
+            });
+
+            function startRoulette(selectedServer) {
+                if (spinning) return; // Если уже вращаем, не начинаем новое вращение
+                spinning = true; // Устанавливаем флаг вращения
+
+                // Запускаем анимацию рулетки
+                const spinDuration = 3000; // Время вращения в миллисекундах
+                let spinStartTime = performance.now();
+                let spinSpeed = 0.05; // Начальная скорость вращения
+
+                spinInterval = setInterval(() => {
+                    drawRoulette();
+                    spinSpeed *= 0.99; // Замедление
+                    if (spinSpeed < 0.01) {
+                        clearInterval(spinInterval);
+                        spinning = false; // Сбрасываем флаг вращения
+
+                        // Определяем выигрышный товар
+                        const winningIndex = Math.floor(Math.random() * selectedRouletteProduct.length);
+                        const winningProduct = selectedRouletteProduct[winningIndex];
+                        $('#rouletteResult').text("Вы выиграли: " + winningProduct.name);
+
+                        // Отправляем запрос на обработку выигрыша
+                        $.post('/Index?handler=PurchaseRoulette', { lotteryId: currentLotteryId, activation: selectedServer, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(response) {
+                            if (!response.success) {
+                                alert(response.message);
+                            }
+                        }).fail(function() {
+                            alert('Ошибка при обработке выигрыша. Попробуйте снова.');
+                        });
+                    }
+                }, 16);
+            }
+
+            function loadRouletteImages(products) {
+                rouletteImages = [];
+                selectedRouletteProduct = products; 
+                products.forEach(product => {
+                    const image = new Image();
+                    image.src = product.imageUrl;
+                    rouletteImages.push(image);
+                });
+            }
+
+            function drawRoulette() {
+                const center = Math.floor(rouletteCanvas.width / 2);
+                rouletteContext.clearRect(0, 0, rouletteCanvas.width, rouletteCanvas.height); 
+
+                for (let i = 0; i < rouletteImages.length; i++) {
+                    const x = (i + startIndex) * (rouletteCanvas.width / rouletteImages.length);
+                    rouletteContext.drawImage(rouletteImages[i], x, 0, rouletteImages[i].width, rouletteImages[i].height);
+                }
+
+                startIndex += 0.5; 
+
+                if (startIndex >= rouletteImages.length) {
+                    startIndex = 0; 
+                }
+            }
+
+              function filterProducts(selectedCategory) {
+                const products = document.querySelectorAll('.store-products__item');
+                products.forEach(product => {
+                    const productCategory = product.getAttribute('data-category');
+                    const productServers = product.getAttribute('data-servers').split(',');
+
+                    const categoryMatch = selectedCategory === "Все" || productCategory === selectedCategory;
+
+                    let selectedServer = null;
+                    document.querySelectorAll('.server-filter').forEach(server => {
+                        if (server.classList.contains('active')) {
+                            selectedServer = server.getAttribute('data-server-name');
+                        }
+                    });
+
+                    const serverMatch = selectedServer === null || selectedServer === "Все сервера" || productServers.includes(selectedServer);
+
+                    product.style.display = (categoryMatch && serverMatch) ? 'block' : 'none';
+                });
+            }
+
+            function filterProductsByServer(selectedServer) {
+                const products = document.querySelectorAll('.store-products__item');
+                products.forEach(product => {
+                    const productCategory = product.getAttribute('data-category');
+                    const selectedCategory = document.querySelector('.store-categories .btn.active').innerText;
+                    const productServers = product.getAttribute('data-servers').split(',');
+
+                    const categoryMatch = selectedCategory === "Все" || productCategory === selectedCategory;
+                    const serverMatch = selectedServer === "Все сервера" || productServers.includes(selectedServer);
+
+                    product.style.display = (categoryMatch && serverMatch) ? 'block' : 'none';
+                });
+            }
+
+            document.querySelectorAll('.server-filter').forEach(server => {
+                server.addEventListener('click', function() {
+                    document.querySelectorAll('.server-filter').forEach(s => s.classList.remove('active'));
+                    this.classList.add('active');
+                    filterProductsByServer(this.getAttribute('data-server-name'));
+                });
+            });
+
+            document.querySelectorAll('.store-categories .btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.store-categories .btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    filterProducts(this.innerText);
+                });
+            });
+        </script>
+    }
+</body>

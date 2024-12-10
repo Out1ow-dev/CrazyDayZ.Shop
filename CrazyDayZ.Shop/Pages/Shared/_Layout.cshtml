@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CrazyDayZ.Shop</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CrazyDayZ.Shop.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div class="container">
+                <nav class="navbar-toggleable-md navbar">
+                    <button type="button" class="navbar-toggler navbar-toggler-right">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <a href="/" class="navbar-brand">MAGIC MARKET</a>
+                    <div class="collapse navbar-collapse">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/news">
+                                    <span>Новости</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/products">
+                                    <span>Товары</span>
+                                </a>
+                            </li>
+                        </ul>
+                        <ul class="ml-auto navbar-nav">
+                            <ui class="float-lg-right-social navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="https://vk.com/magicrust" target="_blank">
+                                        <div class="social-icon social-vk"></div>
+                                        <span>Группа Вконтакте</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="https://discord.gg/magicrust" target="_blank">
+                                        <div class="social-icon social-discord"></div>
+                                        <span>Сервер Discord</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="https://t.me/magicrust" target="_blank">
+                                        <div class="social-icon social-tg"></div>
+                                        <span>Канал в Telegram</span>
+                                    </a>
+                                </li>
+                            </ui>
+                            <ul class="float-lg-right navbar-nav">
+                                <!-- Здесь мы добавляем ваш частичный вид -->
+                                <partial name="_LoginPartial" />
+                            </ul>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

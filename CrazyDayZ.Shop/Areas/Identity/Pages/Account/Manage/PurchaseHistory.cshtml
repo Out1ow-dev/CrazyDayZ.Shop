@@ -1,0 +1,120 @@
+﻿@page
+@model CrazyDayZ.Shop.Areas.Identity.Pages.Account.Manage.PurchaseHistoryModel
+@{
+    ViewData["Title"] = "История покупок";
+    ViewData["ActivePage"] = ManageNavPages.PurchaseHistory;
+}
+
+<div>
+    <div class="animated">
+        <div class="xbox xbox_queue">
+            <div class="xbox__header">
+                <h4>История покупок</h4>
+            </div>
+            <div class="xbox__body">
+                <div class="btn-toolbar mb-3">
+                    <button class="ladda-button btn btn-success" data-style="zoom-out" id="refreshButton">
+                        <span class="ladda-label">Обновить</span>
+                        <span class="ladda-spinner"></span>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="fa fa-search"></i></div>
+                        <input type="search" class="form-control" id="searchInput" placeholder="Введите название товара" autocomplete="off" oninput="filterPurchases()">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <div class="table-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="sorting" width="10%">ID</th>
+                                    <th class="sorting_disabled">Товар</th>
+                                    <th class="sorting_disabled" width="15%">Цена</th>
+                                    <th class="sorting_disabled" width="25%">Время</th>
+                                    <th class="sorting_disabled" width="20%">Промокод</th>
+                                    <th class="sorting_disabled" width="10%">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody class="profile_table" id="purchaseTableBody">
+                                @if (Model.Purchases != null && Model.Purchases.Count > 0)
+                                {
+                                    foreach (var purchase in Model.Purchases)
+                                    {
+                                        <tr>
+                                            <td >@purchase.Id</td>
+                                            <td>@purchase.ProductName</td>
+                                            <td>@purchase.Price.ToString("C")</td>
+                                            <td>@purchase.Time</td>
+                                            <td>@purchase.Promocode</td>
+                                            <td>
+                                                <button class="btn btn-primary" style="margin-bottom: 15px" onclick="copyToClipboard('@purchase.Promocode')">Копировать</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center">Данные отсутствуют</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.getElementById('refreshButton').addEventListener('click', function () {
+            location.reload(); 
+        });
+
+        function filterPurchases() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const tableBody = document.getElementById('purchaseTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                if (cells.length > 0) {
+                    const productName = cells[1].textContent.toLowerCase();
+                    rows[i].style.display = productName.includes(input) ? '' : 'none';
+                }
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function () {
+                alert('Промокод скопирован: ' + text);
+            }, function (err) {
+                console.error('Ошибка при копировании: ', err);
+            });
+        }
+    </script>
+}
+
+<style>
+    .table {
+        margin-left: 0;
+        width: 100%; 
+    }
+
+        .table td, .table th {
+            white-space: nowrap; 
+            text-align: left; 
+        }
+
+        .table td {
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: 200px; 
+        }
+</style>
