@@ -124,7 +124,7 @@ namespace CrazyDayZ.Shop.Pages
             user.Purchase.Add(new Purchase 
             { 
                 ProductName = product.Name,
-                Price = productPrice,
+                Price = productPrice.ToString(),
                 Time = DateTime.Now.ToString("f"),
                 Server = activation,
                 Promocode = $"!promo {entryId}"
@@ -171,7 +171,7 @@ namespace CrazyDayZ.Shop.Pages
             user.Purchase.Add(new Purchase
             {
                 ProductName = winningProduct.Name,
-                Price = 0, // Цена может быть 0, если это выигрыш
+                Price = "0", // Цена может быть 0, если это выигрыш
                 Time = DateTime.Now.ToString("f"),
                 Server = activation,
                 Promocode = $"!promo {GenerateRandomEntryId(10)}" // Генерация промокода для выигрыша
