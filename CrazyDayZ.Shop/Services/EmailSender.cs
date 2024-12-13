@@ -31,8 +31,8 @@ namespace CrazyDayZ.Shop.Services
         public async Task Execute(string subject, string message, string toEmail)
         {
             var mailMessage = new MimeMessage();
-            mailMessage.From.Add(new MailboxAddress("Of.Cloud", Options.SmtpUser));
-            mailMessage.To.Add(new MailboxAddress("From Of.Cloud Tools", toEmail));
+            mailMessage.From.Add(new MailboxAddress("CrazyDayZ Shop", Options.SmtpUser));
+            mailMessage.To.Add(new MailboxAddress("From CrazyDayZ Shop", toEmail));
             mailMessage.Subject = "Подтверждение учетной записи OF.Cloud";
 
             var htmlBody = $@"
@@ -89,22 +89,26 @@ namespace CrazyDayZ.Shop.Services
                 Text = htmlBody
             };
 
-
-
             using (var client = new SmtpClient())
             {
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                client.Connect(Options.SmtpServer, 465, true);
-
-                client.Authenticate(Options.SmtpUser, Options.SmtpPassword);
-
-                client.Send(mailMessage);
-                //client.Dispose();
-                client.Disconnect(true);
+                try
+                {
+                    await client.ConnectAsync(Options.SmtpServer, 465, true);
+                    await client.AuthenticateAsync(Options.SmtpUser, Options.SmtpPassword);
+                    await client.SendAsync(mailMessage);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка при отправке email.");
+                    throw; 
+                }
+                finally
+                {
+                    await client.DisconnectAsync(true);
+                }
             }
-
-
         }
     }
 }
