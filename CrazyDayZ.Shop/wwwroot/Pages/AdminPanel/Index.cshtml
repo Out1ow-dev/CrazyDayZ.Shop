@@ -1,0 +1,42 @@
+﻿@page
+@model CrazyDayZ.Shop.Pages.AdminPanel.IndexModel
+@{
+    ViewData["Title"] = "Профиль";
+    ViewData["ActivePage"] = AdminManageNavPages.Index;
+}
+
+<div class="animated">
+    <div class="xbox xbox_profile">
+        <div class="xbox__header">
+            <h4>Профиль</h4>
+        </div>
+        <div class="xbox__body">
+            <table class="table table-striped profile_table">
+                <tbody>
+                    <tr>
+                        <th>SteamId</th>
+                        <td>
+                            <a href="" target="_blank" rel="noopener noreferrer"></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Баланс</th>
+                        <td>RUB</td>
+                    </tr>
+                    <tr>
+                        <th>Бонусы</th>
+                        <td>0 RUB</td>
+                    </tr>
+                    <tr>
+                        <th>Скидка</th>
+                        <td>0%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

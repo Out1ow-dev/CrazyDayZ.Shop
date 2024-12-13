@@ -1,0 +1,12 @@
+﻿@model IList<CrazyDayZ.Shop.Models.Category>
+
+@foreach (var category in Model)
+{
+    <tr data-id="@category.Id" data-order="@category.Order">
+        <td>@category.Name</td>
+        <td>
+            <button class="btn btn-secondary edit-category" data-id="@category.Id">Редактировать</button>
+            <button class="btn btn-danger delete-category" data-id="@category.Id">Удалить</button>
+        </td>
+    </tr>
+}

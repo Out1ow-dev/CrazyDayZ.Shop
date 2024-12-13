@@ -1,0 +1,114 @@
+﻿@page
+@model CrazyDayZ.Shop.Pages.AdminPanel.CategoriesManageModel
+@inject ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "Категории";
+    ViewData["ActivePage"] = AdminManageNavPages.CategoriesManage;
+}
+
+<h2>Управление категориями</h2>
+
+<form id="categoryForm" method="post">
+    <input type="hidden" asp-for="Category.Id" />
+    <div class="mb-3">
+        <label asp-for="Category.Name" class="form-label">Название категории</label>
+        <input type="text" asp-for="Category.Name" class="form-control" placeholder="Введите название категории" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить категорию</button>
+</form>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody id="categoriesTableBody">
+        @await Html.PartialAsync("_CategoriesTable", Model.Categories) 
+    </tbody>
+</table>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Обработка отправки формы
+            $('#categoryForm').on('submit', function (event) {
+                event.preventDefault(); // Предотвращаем перезагрузку страницы
+
+                $.ajax({
+                    url: '@Url.Page("CategoriesManage", "SaveCategory")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (result) {
+                        $('#categoriesTableBody').html(result); // Обновляем таблицу категорий
+                        $('#categoryForm')[0].reset(); // Сбрасываем форму
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Произошла ошибка при сохранении категории: ' + error);
+                    }
+                });
+            });
+
+            // Обработка нажатия кнопки редактирования
+            $(document).on('click', '.edit-category', function () {
+                var categoryId = $(this).data('id');
+                $.get('@Url.Page("CategoriesManage", "GetCategory")', { id: categoryId }, function (data) {
+                    $('#categoryForm input[name="Category.Id"]').val(data.id);
+                    $('#categoryForm input[name="Category.Name"]').val(data.name);
+                }).fail(function () {
+                    alert('Не удалось получить данные категории.');
+                });
+            });
+
+            // Обработка нажатия кнопки удаления
+            $(document).on('click', '.delete-category', function () {
+                var categoryId = $(this).data('id');
+                if (confirm('Вы уверены, что хотите удалить эту категорию?')) {
+                    $.ajax({
+                        url: '@Url.Page("CategoriesManage", "DeleteCategory")',
+                        type: 'POST',
+                        data: { id: categoryId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, // Добавляем CSRF-токен
+                        success: function (result) {
+                            $('#categoriesTableBody').html(result); 
+                        },
+                        error: function (xhr) {
+                            alert('Не удалось удалить категорию: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+
+            // Функционал перетаскивания
+            $('#categoriesTableBody').sortable({
+                items: 'tr',
+                cursor: 'move',
+                update: function (event, ui) {
+                    var order = $(this).sortable('toArray', { attribute: 'data-id' });
+                    updateCategoryOrder(order);
+                }
+            });
+
+            function updateCategoryOrder(order) {
+                $.ajax({
+                    url: '@Url.Page("CategoriesManage", "UpdateCategoryOrder")',
+                    type: 'POST',
+                            data: {
+                        order: order,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                    },                               
+                    success: function (result) {
+                        $('#categoriesTableBody').html(result); // Обновляем таблицу категорий
+                    },
+                    error: function (xhr) {
+                        alert('Не удалось обновить порядок категорий: ' + xhr.responseText);
+                    }
+                });
+            }
+        });
+    </script>
+}

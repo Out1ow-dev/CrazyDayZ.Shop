@@ -1,0 +1,30 @@
+﻿@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
+    {
+        Layout = parentLayout.ToString();
+    }
+    else
+    {
+        Layout = "/Pages/Shared/_Layout.cshtml";
+    }
+}
+
+
+
+<div class="container-fluid vh-100">
+    <div class="row" style="margin-top: 200px;">
+        <!-- Добавляем отступ сверху -->
+        <div class="col-md-3">
+            <partial name="_AdminManageNav" />
+        </div>
+        <div class="col-md-9">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

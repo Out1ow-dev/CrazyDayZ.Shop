@@ -1,0 +1,15 @@
+﻿@model IEnumerable<CrazyDayZ.Shop.Models.ServerData>
+
+@foreach (var server in Model)
+{
+    <tr>
+        <td>@server.Name</td>
+        <td>@server.IP</td>
+        <td>@server.Port</td>
+        <td>@server.MaxSlots</td>
+        <td>
+            <button class="btn btn-warning edit-server" data-id="@server.Id">Редактировать</button>
+            <button class="btn btn-danger delete-server" data-id="@server.Id">Удалить</button>
+        </td>
+    </tr>
+}

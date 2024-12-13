@@ -1,0 +1,37 @@
+﻿@using CrazyDayZ.Shop.Models
+@model CombinedTableViewModel
+
+<tbody id="combinedTableBody">
+    @foreach (var product in Model.Products)
+    {
+        <tr data-id="@product.Id">
+            <td>Продукт</td>
+            <td>@product.Name</td>
+            <td>@product.OldPrice</td>
+            <td>@product.NewPrice</td>
+            <td>@product.Discount</td>
+            <td>
+                <button class="btn btn-warning edit-product" data-id="@product.Id">Редактировать</button>
+                <button class="btn btn-danger delete-product" data-id="@product.Id">Удалить</button>
+            </td>
+        </tr>
+    }
+    @foreach (var lottery in Model.Lotteries)
+    {
+        <tr data-id="@lottery.Id">
+            <td>Рулетка</td>
+            <td>@lottery.Name</td>
+            <td>@lottery.OldPrice</td>
+            <td>@lottery.NewPrice</td>
+            <td>@lottery.Discount</td>
+            <td>
+                <button class="btn btn-warning edit-lottery" data-id="@lottery.Id">Редактировать</button>
+                <button class="btn btn-danger delete-lottery" data-id="@lottery.Id">Удалить</button>
+            </td>
+        </tr>
+    }
+</tbody>
+
+
+
+

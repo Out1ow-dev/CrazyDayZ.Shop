@@ -14,7 +14,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["CrazyDayZ.Shop/CrazyDayZ.Shop.csproj", "CrazyDayZ.Shop/"]
 RUN dotnet restore "./CrazyDayZ.Shop/CrazyDayZ.Shop.csproj"
-COPY . .
+COPY CrazyDayZ.Shop/. CrazyDayZ.Shop/
 WORKDIR "/src/CrazyDayZ.Shop"
 RUN dotnet build "./CrazyDayZ.Shop.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
