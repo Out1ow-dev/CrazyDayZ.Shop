@@ -8,6 +8,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/Certificates/https.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/app/Certificates/https.key
     ports:
       - "8080:8080"
       - "8081:8081"
