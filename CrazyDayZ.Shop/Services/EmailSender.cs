@@ -21,17 +21,17 @@ namespace CrazyDayZ.Shop.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string message)
         {
-            if (string.IsNullOrEmpty(Options.SmtpServer))
-            {
-                throw new Exception("Null SMTP Server");
-            }
+            //if (string.IsNullOrEmpty(Options.SmtpServer))
+           // {
+            //    throw new Exception("Null SMTP Server");
+           // }
             await Execute(subject, message, toEmail);
         }
 
         public async Task Execute(string subject, string message, string toEmail)
         {
             var mailMessage = new MimeMessage();
-            mailMessage.From.Add(new MailboxAddress("CrazyDayZ Shop", Options.SmtpUser));
+            mailMessage.From.Add(new MailboxAddress("CrazyDayZ Shop", "Out1ow@yandex.ru"));
             mailMessage.To.Add(new MailboxAddress("From CrazyDayZ Shop", toEmail));
             mailMessage.Subject = "Подтверждение учетной записи OF.Cloud";
 
@@ -95,8 +95,8 @@ namespace CrazyDayZ.Shop.Services
 
                 try
                 {
-                    await client.ConnectAsync(Options.SmtpServer, 465, true);
-                    await client.AuthenticateAsync(Options.SmtpUser, Options.SmtpPassword);
+                    await client.ConnectAsync("smtp.yandex.ru", 465, true);
+                    await client.AuthenticateAsync("Out1ow@yandex.ru", "aapspjwhsyrhxlcd");
                     await client.SendAsync(mailMessage);
                 }
                 catch (Exception ex)
